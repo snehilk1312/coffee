@@ -1,0 +1,4 @@
+*.zst
+logs/
+*.log
+.env

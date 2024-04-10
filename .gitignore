@@ -2,3 +2,4 @@
 logs/
 *.log
 .env
+embed_dir/

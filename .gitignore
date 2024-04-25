@@ -2,4 +2,5 @@
 logs/
 *.log
 .env
-embed_dir/
+embed_dir*
+data/pushshiftdumps/dataengineering_comments.csv

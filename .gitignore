@@ -4,3 +4,4 @@ logs/
 .env
 embed_dir*
 data/pushshiftdumps/dataengineering_comments.csv
+__pycache__

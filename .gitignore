@@ -5,3 +5,5 @@ logs/
 embed_dir*
 data/pushshiftdumps/dataengineering_comments.csv
 __pycache__
+.DS_Store
+extras/

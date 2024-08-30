@@ -1,7 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+roaster = 'bloom_coffee_roasters'
 # Base URL for coffee products
 base_url = "https://bloomcoffeeroasters.in/collections/coffee?page="
 total_page = 2
@@ -81,3 +89,10 @@ with open(csv_file, 'w', newline='') as csvfile:
             })
 
 print(f"Data has been written to {csv_file}")
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_file)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

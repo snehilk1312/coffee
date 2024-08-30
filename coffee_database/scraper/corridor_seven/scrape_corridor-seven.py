@@ -1,7 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+roaster = 'corridor_seven'
+csv_file = 'corridor_seven.csv'
 max_pages=3
 
 # Function to scrape individual product page details
@@ -58,7 +67,7 @@ def scrape_page(page_url):
     response = requests.get(page_url)
     html_content = response.content
     soup = BeautifulSoup(html_content, 'html.parser')
-    products = soup.find_all('div', class_='product-grid-item product basel-hover-quick col-xs-6 col-sm-4 col-md-3 purchasable')
+    products = soup.find_all('div', class_='product-grid-item')
     
     product_data = []
     for product in products:
@@ -94,7 +103,7 @@ base_url = "https://corridorseven.coffee/collections/all"
 all_product_data = scrape_all_pages(base_url, max_pages)
 
 # Write data to CSV
-with open('corridor_seven.csv', mode='w', newline='', encoding='utf-8') as file:
+with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
     # Write header
     writer.writerow(['Name', 'Price', 'Link', 'Tastes Like', 'Roasting Profile', 'Varietal', 'Altitude', 'Process', 'Estate Name', 'Producer Name', 'Description'])
@@ -103,3 +112,10 @@ with open('corridor_seven.csv', mode='w', newline='', encoding='utf-8') as file:
     writer.writerows(all_product_data)
 
 print("Data has been written to corridor_seven_coffees.csv")
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_file)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

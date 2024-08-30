@@ -1,13 +1,22 @@
-import csv
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+import csv
+import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+roaster = 'naivo'
+csv_file = 'coffee_naivo.csv'
 # Base URL for the website
 base_url = "https://naivo.in/product-category/shop-coffee/page/"
 total_pages = 3
 
 # Open CSV file for writing
-with open('coffee_naivo.csv', mode='w', newline='', encoding='utf-8') as file:
+with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
     # Write the headers
     writer.writerow([
@@ -67,3 +76,11 @@ with open('coffee_naivo.csv', mode='w', newline='', encoding='utf-8') as file:
             ])
 
 print("Coffee details extracted and saved to coffee_naivo.csv")
+
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_file)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

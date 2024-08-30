@@ -2,7 +2,15 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+import os,re
+from dotenv import load_dotenv
 
+load_dotenv()
+
+roaster = 'blue_tokai'
+csv_file = 'coffee_blue_tokai.csv'
 def fetch_coffee_data(url):
     response = requests.get(url)
     html_content = response.text
@@ -109,7 +117,7 @@ for coffee in all_coffee_list:
     print('-'*100)
 
 # Save to a CSV file
-with open('coffee_blue_tokai.csv', 'w', newline='', encoding='utf-8') as csvfile:
+with open(csv_file, 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
     writer.writeheader()
@@ -118,7 +126,7 @@ with open('coffee_blue_tokai.csv', 'w', newline='', encoding='utf-8') as csvfile
 
 # arrange columns
 
-df = pd.read_csv('coffee_blue_tokai.csv')
+df = pd.read_csv(csv_file)
 all_columns = [
         'name',
         'price',
@@ -147,6 +155,13 @@ columns_missing = [i for i in all_columns if i not in df.columns.tolist()]
 df[columns_missing] = None
 df = df[all_columns]
 
-df.to_csv('coffee_blue_tokai.csv',index=False)
+df.to_csv(csv_file,index=False)
 
 print("Coffee information saved to coffee_blue_tokai.csv")
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_file)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

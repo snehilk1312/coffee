@@ -1,7 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-import re
+import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+import os,re
+from dotenv import load_dotenv
+
+load_dotenv()
+
+roaster = 'quick_brown_fox'
 
 
 
@@ -14,8 +22,9 @@ response = requests.get(url)
 html_content = response.content
 soup = BeautifulSoup(html_content, 'html.parser')
 
+csv_filename = 'coffee_qbf.csv'
 # Prepare the CSV file
-csv_file = open('coffee_qbf.csv', 'w', newline='', encoding='utf-8')
+csv_file = open(csv_filename, 'w', newline='', encoding='utf-8')
 csv_writer = csv.writer(csv_file)
 csv_writer.writerow([
     'Name', 'Price', 'Link', 
@@ -82,3 +91,11 @@ for product in products:
     ])
 
 csv_file.close()
+
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_filename)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

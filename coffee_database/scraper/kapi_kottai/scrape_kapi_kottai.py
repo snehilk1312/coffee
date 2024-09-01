@@ -25,9 +25,9 @@ base_url = "https://kapikottai.coffee"
 # Extract product information
 products = []
 for product in soup.find_all('li', class_='grid__item'):
-    name = product.find('h3', class_='card__heading').get_text(strip=True)
-    availability = product.find('div', class_='card__badge').get_text(strip=True)
-    price = product.find('span', class_='price-item--regular').get_text(strip=True)
+    name = product.find('h3', class_='card__heading').get_text(separator=" ", strip=True)
+    availability = product.find('div', class_='card__badge').get_text(separator=" ", strip=True)
+    price = product.find('span', class_='price-item--regular').get_text(separator=" ", strip=True)
     link = base_url + product.find('a', class_='full-unstyled-link')['href']
     
     products.append([name, availability, price, link])
@@ -52,15 +52,15 @@ def scrape_properties(url):
     for detail in details:
         summary = detail.find('summary')
         if summary:
-            title = summary.get_text(strip=True)
+            title = summary.get_text(separator=" ", strip=True)
             content = detail.find('div', class_='accordion__content rte')
             if content:
-                property_value = content.get_text(strip=True)
+                property_value = content.get_text(separator=" ", strip=True)
                 if title in properties:
                     properties[title] = property_value
     description = soup.find('div', class_='product__description')
     if description:
-        properties['Description'] = description.get_text(strip=True)
+        properties['Description'] = description.get_text(separator=" ", strip=True)
     
     return properties
 

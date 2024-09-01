@@ -22,7 +22,7 @@ def scrape_product_details(product_url):
     # Extract additional details
     description_div = product_soup.find('div', class_='shopify-product-details__short-description')
     if description_div:
-        description_text = description_div.get_text(strip=True)
+        description_text = description_div.get_text(separator=" ", strip=True)
         description_parts = description_text.split('||')
         
         tastes_like = ""
@@ -71,8 +71,8 @@ def scrape_page(page_url):
     
     product_data = []
     for product in products:
-        name = product.find('h3', class_='product-title').get_text(strip=True)
-        price = product.find('span', class_='price').get_text(strip=True)
+        name = product.find('h3', class_='product-title').get_text(separator=" ", strip=True)
+        price = product.find('span', class_='price').get_text(separator=" ", strip=True)
         link = "https://corridorseven.coffee" + product.find('a', class_='jas-pr-image-link')['href']
         if name=='SAMPLER PACK':
             continue

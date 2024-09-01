@@ -67,8 +67,8 @@ def fetch_additional_details(product_url):
         for field in fields:
             p_tag = field.find('p')
             if p_tag and p_tag.find('b'):
-                key = p_tag.find('b').get_text(strip=True).lower().replace(' ', '_')
-                value = p_tag.get_text(strip=True).replace(p_tag.find('b').get_text(strip=True), '').strip()
+                key = p_tag.find('b').get_text(separator=" ", strip=True).lower().replace(' ', '_')
+                value = p_tag.get_text(separator=" ", strip=True).replace(p_tag.find('b').get_text(separator=" ", strip=True), '').strip()
                 additional_details[key] = value
     
     extract_details(compare_fields)
@@ -77,17 +77,17 @@ def fetch_additional_details(product_url):
     # Extract blue_tokai_class
     blue_tokai_class_tag = soup.find('h4', class_='cd-bg-text')
     if blue_tokai_class_tag:
-        additional_details['blue_tokai_class'] = blue_tokai_class_tag.get_text(strip=True)
+        additional_details['blue_tokai_class'] = blue_tokai_class_tag.get_text(separator=" ", strip=True)
     
     # Extract description
     description_tag = soup.find('div', class_='cdfulltext')
     if description_tag:
-        additional_details['description'] = description_tag.get_text(strip=True)
+        additional_details['description'] = description_tag.get_text(separator=" ", strip=True)
 
     # Extract price
     price_tag = soup.find('span',class_='product__price')
     if price_tag:
-        additional_details['price'] = price_tag.get_text(strip=True)
+        additional_details['price'] = price_tag.get_text(separator=" ", strip=True)
 
     return additional_details
 

@@ -18,10 +18,14 @@ def price_cleaner(text):
 
         # Define regex pattern to extract the numeric part of the price
         price_pattern = re.compile(r'(?:[\₹]|Rs?\.?)\s*([\d,]+(?:\.\d+)?)', re.IGNORECASE)
-        
         # Find all matches in the input text
-        matches = price_pattern.findall(text)
-        
+        matches = price_pattern.findall(text)  
+
+        if not matches:
+            price_pattern = re.compile(r'\d+', re.IGNORECASE)
+            matches = price_pattern.findall(text) 
+
+
         # Convert the matches to numeric format
         numeric_prices = [float(match.replace(',', '')) for match in matches if match]
         
@@ -30,3 +34,5 @@ def price_cleaner(text):
     except:
         return None
         
+if __name__=='__main__':
+    print(price_cleaner("750"))

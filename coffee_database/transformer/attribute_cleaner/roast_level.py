@@ -4,6 +4,10 @@ medium_dark_keywords = ['dark','chocolate', 'earthy', 'spicy', 'mellow', 'bitter
 
 def get_roast_level(roast_level_raw,description):
 
+    if not roast_level_raw:
+        return None
+    if not description:
+        description=''
     # Convert to lowercase for easier comparison
     roast_level_raw_lower = roast_level_raw.lower()  
     description = description.lower()

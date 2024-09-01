@@ -11,6 +11,8 @@ def extract_altitude(text):
     Tuple[float, float]: A tuple containing the minimum altitude and maximum altitude in meters,
                          or None if no altitudes are found.
     """
+    if not text:
+        return None
     # Define regex patterns to extract altitude in meters or feet
     altitude_pattern = re.compile(r'(\d{3,4})\s*[-–]?\s*(\d{3,4})?\s*(m|M|masl|MASL|asl|ASL|meters|ft|Feet|feet)?', re.IGNORECASE)
     
@@ -29,10 +31,10 @@ def extract_altitude(text):
         
         # Convert to meters if the unit is in feet
         if 'ft' in unit or 'feet' in unit:
-            low = low * 0.3048
-            high = high * 0.3048
+            low = str(low * 0.3048)
+            high = str(high * 0.3048)
         
-        altitudes.append((low, high))
+        altitudes.append(f"{low}-{high}")
     
     # Return the first match as a tuple (min_altitude, max_altitude) in meters
     return altitudes[0]
@@ -42,3 +44,5 @@ if __name__=="__main__":
     print(extract_altitude(altitude))
     altitude = '4000+ Feet'
     print(extract_altitude(altitude))
+    altitude = None
+    print(extract_altitude(None))

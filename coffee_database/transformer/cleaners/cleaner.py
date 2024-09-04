@@ -46,7 +46,6 @@ for roaster in roaster_list:
                     'tastes_like': 'tasting_notes',
                     'roasting_profile': 'roast_level',
                     'estate_name': 'estate',
-                    'wet_aroma': 'tasting_notes',
                     'roast_profile': 'roast_level',
                     'roaster_thoughts': 'description',
                     'product_name': 'name',

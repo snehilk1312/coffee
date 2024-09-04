@@ -24,7 +24,7 @@ base_url = 'https://greysoul.coffee/'
 csv_file = 'coffee_greysoul.csv'
 csv_columns = ['Name', 'Availability', 'Price', 'Link', 'Origin', 'Process', 'Varietal', 'Altitude', 
                'Dry Aroma', 'Wet Aroma', 'Roast Profile', 'Characteristics', 
-               'Minimum Resting Period', 'description']
+               'Minimum Resting Period', 'tasting_notes', 'description']
 
 with open(csv_file, 'w', newline='') as file:
     writer = csv.writer(file)
@@ -56,6 +56,7 @@ with open(csv_file, 'w', newline='') as file:
         roast_profile = extract_property('Roast Profile')
         characteristics = extract_property('Characteristics')
         min_resting_period = extract_property('Minimum resting period')
+        tasting_notes = extract_property('Based on Sensory Evaluation')
 
 
 
@@ -65,7 +66,7 @@ with open(csv_file, 'w', newline='') as file:
         # Write row to CSV
         writer.writerow([name, availability, price, link, origin, process, varietal, altitude, 
                          dry_aroma, wet_aroma, roast_profile, characteristics, 
-                         min_resting_period, description])
+                         min_resting_period,tasting_notes, description])
 
 
 # putting it into db
@@ -73,4 +74,4 @@ with open(csv_file, 'w', newline='') as file:
 conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
 df = pd.read_csv(csv_file)
 df['scraped_at'] = datetime.now()
-df.to_sql(name = roaster , con=conn, index=False, if_exists='replace',schema='raw_scraped')
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

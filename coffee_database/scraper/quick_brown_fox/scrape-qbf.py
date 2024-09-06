@@ -80,7 +80,7 @@ for product in products:
     process = properties.get('process')
     fermentation = properties.get('fermentation')
     farmer = properties.get('farmer')
-    description = description_section.text
+    description = description_section.get_text(strip=True,separator=' ')
 
     # Write to CSV
     csv_writer.writerow([

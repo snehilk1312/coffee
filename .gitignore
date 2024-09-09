@@ -10,3 +10,4 @@ extras/
 output_try*
 *.spacy
 train_file_try*.txt
+models/

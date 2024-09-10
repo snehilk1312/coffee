@@ -80,7 +80,7 @@ def fetch_additional_details(product_url):
         additional_details['blue_tokai_class'] = blue_tokai_class_tag.get_text(separator=" ", strip=True)
     
     # Extract description
-    description_tag = soup.find('div', class_='cdfulltext')
+    description_tag = soup.find('div', class_='readhide')
     if description_tag:
         additional_details['description'] = description_tag.get_text(separator=" ", strip=True)
 

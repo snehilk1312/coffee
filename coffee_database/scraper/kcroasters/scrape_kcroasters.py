@@ -33,10 +33,18 @@ for product in products:
         # Extract the required fields
         for j in range(len(product_json)):
             url = product_json[j].get('url', '')
+            description_sc = ''
+            if url!='https://kcroasters.com/collections/coffee':
+                response_sc = requests.get(url)
+                html_content_sc = response_sc.content
+                soup_sc = BeautifulSoup(html_content_sc, 'html.parser')
+                description_sc = soup_sc.find('div', class_='description', itemprop='description').get_text(separator=" ", strip=True)
+                
             name = product_json[j].get('name', '')
             price = str(product_json[j].get('offers', ''))
             if price:
                 price = price.split("'price': ")[1].split(',')[0]
+            
             description = product_json[j].get('description', '').lower()
             description = description.replace(':','-')
             description = remove_spaces_around_special_chars(description)
@@ -48,7 +56,10 @@ for product in products:
             best_with = ''
             tasting_notes = ''
 
-            description_text = description
+            if description_sc:
+                description_text = description_sc
+            else:
+                description_text = description
 
             # Find each property in the description
             if 'region-' in description:

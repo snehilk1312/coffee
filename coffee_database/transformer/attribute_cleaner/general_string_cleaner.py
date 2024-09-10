@@ -30,9 +30,11 @@ def text_cleaner(input_string):
     cleaned = re.sub(r'^[.,!?&;:\[\]{}-]+|[.,!?&;:\[\]{}-]+$', '', cleaned)
 
     # custom
-    cleaned = re.sub(r"\s'\s", "'", cleaned)
-    cleaned = re.sub(r'\s"\s', '"', cleaned)
-    cleaned = re.sub(r"\s-\s", "-", cleaned)
+
+    # removing this specific set coz problems in NER
+    # cleaned = re.sub(r"\s'\s", "'", cleaned)
+    # cleaned = re.sub(r'\s"\s', '"', cleaned)
+    # cleaned = re.sub(r"\s-\s", "-", cleaned)
 
 
     # Step 6: Final strip to remove leading/trailing whitespace

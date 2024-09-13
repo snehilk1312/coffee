@@ -1,6 +1,7 @@
 
 import pandas as pd
-import os,re,json
+import os,re,json,sys
+from tqdm import tqdm
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from attribute_cleaner.price_cleaner import price_cleaner
@@ -9,6 +10,13 @@ from attribute_cleaner.altitude_cleaner import extract_altitude
 from attribute_cleaner.roast_level import get_roast_level
 from datetime import datetime
 import sqlalchemy
+import spacy
+from sqlalchemy.types import VARCHAR,TIMESTAMP,BIGINT,NUMERIC,BOOLEAN,DATE,TEXT
+from sqlalchemy.dialects.postgresql import JSONB
+
+import warnings
+# Suppress all warnings
+warnings.filterwarnings("ignore")
 
 load_dotenv()
 
@@ -19,13 +27,32 @@ roaster_list = ['savorworks','bloom_coffee_roasters','blue_tokai','corridor_seve
 # List of standard cols
 standard_cols = ["roaster","name", "link", "price", "altitude", "varietal", "processing", 
                 "estate", "roast_level", "tasting_notes", "description", 
-                "country", "scraped_at","transformed_at","extra_properties"]
+                "country", "scraped_at","transformed_at","extra_properties","ner_properties"]
 
 # Create an SQLAlchemy engine (replace with your actual database URL)
 engine = sqlalchemy.create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
 
+nlp = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_3/model-best/')
 
-for roaster in roaster_list:
+def return_each_label(text):
+    return_dict = {}
+    final_dict = {}
+
+    if text:
+        doc = nlp(text.lower())
+        
+        for ent in doc.ents:
+            # print(ent.label_)
+            if ent.label_ not in return_dict.keys():
+                return_dict[ent.label_] = [ent.text]
+            else:
+                return_dict[ent.label_].append(ent.text)
+
+        for key,val in return_dict.items():
+            final_dict[key] = ' , '.join(list(set(return_dict[key]))) if return_dict[key] else None
+    return final_dict
+
+for roaster in tqdm(roaster_list, desc="Processing roasters"):
 
     # Define your SQL query
     query = f"""
@@ -76,6 +103,12 @@ for roaster in roaster_list:
     df["extra_properties"] = df.apply(lambda row: {col: row[col] for col in df.columns if col not in standard_cols}, axis=1)
     df['extra_properties'] = df['extra_properties'].apply(json.dumps)
 
+    df["ner_properties"] = df['description'].apply(return_each_label)
+    df["ner_properties"] = df["ner_properties"].apply(json.dumps)
+
+    # taking missing cols from NER dict
+    # TYPE CODE HERE to extract missing fields from NER 
+
     # taking care of extra or less columns
     df = df[standard_cols]  
 
@@ -90,11 +123,22 @@ for roaster in roaster_list:
     df['country'] = df['country'].where(df['country'].notna(), 'india')
     df['transformed_at'] = datetime.now()    
 
-    print(df.columns)
-    df = df[standard_cols + ["extra_properties"]]
+    # print(df.columns)
+    # df = df[standard_cols + ["extra_properties"]]
+    # df = df[standard_cols + ["ner_properties"]]
+
+    # type_col = {col_name: TEXT for col_name in df}
+
+    # type_col['transformed_at'] = TIMESTAMP
+    # type_col['scraped_at'] = TIMESTAMP
+    # type_col['extra_properties'] = JSONB
+    # type_col['ner_properties'] = JSONB
+
+
 
     # putting it into db
     conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+    # df.to_sql(name = 'transformed_stg' , con=conn, index=False, if_exists='append',dtype=type_col,schema='public')
     df.to_sql(name = 'transformed_stg' , con=conn, index=False, if_exists='append',schema='public')
 
     print(f'{roaster} TRANSFORMED !!!')

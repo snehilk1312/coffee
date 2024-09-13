@@ -30,19 +30,19 @@ def extract_altitude(text):
         unit = match[2].lower() if match[2] else 'm'  # Default to 'm' if no unit is specified
         
         # Convert to meters if the unit is in feet
-        if 'ft' in unit or 'feet' in unit:
-            low = str(low * 0.3048)
-            high = str(high * 0.3048)
+        if 'ft' in unit or 'feet' in unit or low>=2500 or high>=2500:
+            low = low * 0.3048
+            high = high * 0.3048
         
-        altitudes.append(f"{low}-{high}")
+        altitudes.append([low,high])
     
     # Return the first match as a tuple (min_altitude, max_altitude) in meters
-    return altitudes[0]
+    return int(sum(altitudes[0])/2)
 
 if __name__=="__main__":
     altitude = '1320 – 1870 masl'
     print(extract_altitude(altitude))
     altitude = '4000+ Feet'
     print(extract_altitude(altitude))
-    altitude = None
-    print(extract_altitude(None))
+    altitude = '4400 feet , 1350 meters'
+    print(extract_altitude(altitude))

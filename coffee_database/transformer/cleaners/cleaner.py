@@ -24,11 +24,6 @@ roaster_list = ['savorworks','bloom_coffee_roasters','blue_tokai','corridor_seve
                 'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox'
                 ]
 
-# List of standard cols
-standard_cols = ["roaster","name", "link", "price", "altitude", "varietal", "processing", 
-                "estate", "roast_level", "tasting_notes", "description", 
-                "country", "scraped_at","transformed_at","extra_properties","ner_properties"]
-
 # Create an SQLAlchemy engine (replace with your actual database URL)
 engine = sqlalchemy.create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
 
@@ -53,6 +48,10 @@ def return_each_label(text):
     return final_dict
 
 for roaster in tqdm(roaster_list, desc="Processing roasters"):
+    # List of standard cols
+    standard_cols = ["roaster","name", "link", "price", "altitude", "varietal", "processing", 
+                "estate", "roast_level", "tasting_notes", "description", 
+                "country", "scraped_at","transformed_at","extra_properties","ner_properties"]
 
     # Define your SQL query
     query = f"""
@@ -85,7 +84,7 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     columns_missing_from_standard_table = [i for i in standard_cols if i not in df.columns.tolist()]
     df[columns_missing_from_standard_table] = None
 
-    col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','description','variety']
+    col_text_cleaner = ['description']
     for text_col in col_text_cleaner:
         try:
             df[text_col] = df[text_col].apply(text_cleaner)
@@ -106,9 +105,6 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     df["ner_properties"] = df['description'].apply(return_each_label)
     df["ner_properties"] = df["ner_properties"].apply(json.dumps)
 
-    # taking missing cols from NER dict
-    # TYPE CODE HERE to extract missing fields from NER 
-
     # taking care of extra or less columns
     df = df[standard_cols]  
 
@@ -123,18 +119,112 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     df['country'] = df['country'].where(df['country'].notna(), 'india')
     df['transformed_at'] = datetime.now()    
 
-    # print(df.columns)
-    # df = df[standard_cols + ["extra_properties"]]
-    # df = df[standard_cols + ["ner_properties"]]
+    # taking missing cols from NER dict
 
-    # type_col = {col_name: TEXT for col_name in df}
+    # Altitude Filling from jsonb
+    # Extract 'ELEVATION' from 'ner_properties' column (assuming it's JSON)
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('ELEVATION') if pd.notnull(x) else None)
+    df['json_placeholder'] = df['json_placeholder'].apply(extract_altitude)
+    # Fill null values in 'altitude' with values from 'altitude_backup'
+    df['altitude'] = df['altitude'].fillna(df['json_placeholder'])
+    df.drop(['json_placeholder'],axis=1,inplace=True)
 
-    # type_col['transformed_at'] = TIMESTAMP
-    # type_col['scraped_at'] = TIMESTAMP
-    # type_col['extra_properties'] = JSONB
-    # type_col['ner_properties'] = JSONB
+    # Estate Filling from jsonb
+    # Extract 'ESTATE' from 'ner_properties' column (assuming it's JSON)
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('ESTATE') if pd.notnull(x) else None)
+
+    # Fill null values in 'estate' or concatenate existing values with json placeholder
+    df['estate'] = df.apply(
+        lambda row: row['json_placeholder'] if pd.isna(row['estate']) 
+                    else (f"{row['estate']}, {row['json_placeholder']}" if pd.notna(row['json_placeholder']) else row['estate']),
+        axis=1
+    )
+    df.drop(['json_placeholder'], axis=1, inplace=True)
+
+    # Varietal Filling from jsonb
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('VARIETAL') if pd.notnull(x) else None)
+    df['varietal'] = df.apply(
+        lambda row: row['json_placeholder'] if pd.isna(row['varietal']) 
+                    else (f"{row['varietal']}, {row['json_placeholder']}" if pd.notna(row['json_placeholder']) else row['varietal']),
+        axis=1
+    )
+    df.drop(['json_placeholder'], axis=1, inplace=True)
+
+    # Processing Filling from jsonb
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('PROCESSING') if pd.notnull(x) else None)
+    df['processing'] = df.apply(
+        lambda row: row['json_placeholder'] if pd.isna(row['processing']) 
+                    else (f"{row['processing']}, {row['json_placeholder']}" if pd.notna(row['json_placeholder']) else row['processing']),
+        axis=1
+    )
+    df.drop(['json_placeholder'], axis=1, inplace=True)
+
+    # Roast Level Filling from jsonb
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('ROAST LEVEL') if pd.notnull(x) else None)
+    df['json_placeholder'] = df.apply(lambda row: get_roast_level(row['json_placeholder'], row['description']), axis=1)
+
+    df['roast_level'] = df['roast_level'].fillna(df['json_placeholder'])
+    df.drop(['json_placeholder'],axis=1,inplace=True)
 
 
+    # Tasting Notes Filling from jsonb
+    df['json_placeholder'] = df['ner_properties'].apply(lambda x: json.loads(x).get('TASTING NOTES') if pd.notnull(x) else None)
+    df['tasting_notes'] = df['tasting_notes'].fillna(df['json_placeholder'])
+    df.drop(['json_placeholder'],axis=1,inplace=True)
+
+
+    # EXTRA COLS
+
+    # Location 
+    df['region'] = df['extra_properties'].apply(lambda x: json.loads(x).get('region') if pd.notnull(x) else None)
+    df['location'] = df['extra_properties'].apply(lambda x: json.loads(x).get('location') if (pd.notnull(x) and json.loads(x).get('location')!='Not available') else None)
+    df['LOCATION'] = df['ner_properties'].apply(lambda x: json.loads(x).get('LOCATION') if pd.notnull(x) else None)
+
+    df['location'] = df['region'].fillna(df['location'])
+    df['location'] = df['location'].fillna(df['LOCATION'])
+    df.drop(['region','LOCATION'],axis=1,inplace=True)
+
+    # Producers 
+    df['planters'] = df['extra_properties'].apply(lambda x: json.loads(x).get('planters') if pd.notnull(x) else None)
+    df['producers'] = df['extra_properties'].apply(lambda x: json.loads(x).get('producers') if pd.notnull(x) else None)
+    df['FARMER'] = df['ner_properties'].apply(lambda x: json.loads(x).get('FARMER') if pd.notnull(x) else None)
+
+    df['producers'] = df['planters'].fillna(df['producers'])
+    df['producers'] = df['producers'].fillna(df['FARMER'])
+    df.drop(['planters','FARMER'],axis=1,inplace=True)
+
+    # Coffee type 
+    df['type'] = df['extra_properties'].apply(lambda x: json.loads(x).get('type') if pd.notnull(x) else None)
+    df['COFFEE TYPE'] = df['ner_properties'].apply(lambda x: json.loads(x).get('COFFEE TYPE') if pd.notnull(x) else None)
+
+    df['coffee_type'] = df['type'].fillna(df['COFFEE TYPE'])
+    df.drop(['type','COFFEE TYPE'],axis=1,inplace=True)
+
+    # Aroma 
+    df['dry_aroma'] = df['extra_properties'].apply(lambda x: json.loads(x).get('dry_aroma') if pd.notnull(x) else None)
+    df['wet_aroma'] = df['extra_properties'].apply(lambda x: json.loads(x).get('wet_aroma') if pd.notnull(x) else None)
+
+    df['aroma'] = df.apply(
+        lambda row: f"{row['dry_aroma']} {row['wet_aroma']}".strip() if row['dry_aroma'] or row['wet_aroma'] else 
+        (json.loads(row['ner_properties']).get('AROMA') if pd.notnull(row['ner_properties']) else None),
+        axis=1
+    )
+    df.drop(['wet_aroma','dry_aroma'],axis=1,inplace=True)
+
+    addition_cols = ['location','producers','coffee_type','aroma']
+    standard_cols.extend(addition_cols)
+
+    print(standard_cols)
+
+    df = df[standard_cols]
+
+
+    col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','variety']
+    for text_col in col_text_cleaner:
+        try:
+            df[text_col] = df[text_col].apply(text_cleaner)
+        except KeyError:
+            pass
 
     # putting it into db
     conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')

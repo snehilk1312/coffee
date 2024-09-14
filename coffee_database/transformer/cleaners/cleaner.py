@@ -51,7 +51,9 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     # List of standard cols
     standard_cols = ["roaster","name", "link", "price", "altitude", "varietal", "processing", 
                 "estate", "roast_level", "tasting_notes", "description", 
-                "country", "scraped_at","transformed_at","extra_properties","ner_properties"]
+                "country", "scraped_at","transformed_at"
+                ,"extra_properties","ner_properties"
+                ]
 
     # Define your SQL query
     query = f"""
@@ -211,15 +213,45 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     )
     df.drop(['wet_aroma','dry_aroma'],axis=1,inplace=True)
 
-    addition_cols = ['location','producers','coffee_type','aroma']
+    # Acidity
+    df['acidity'] = df['extra_properties'].apply(lambda x: json.loads(x).get('acidity') if (pd.notnull(x) and json.loads(x).get('acidity')!='Not available') else None)
+    df['ACIDITY'] = df['ner_properties'].apply(lambda x: json.loads(x).get('ACIDITY') if pd.notnull(x) else None)
+
+    df['acidity'] = df['acidity'].fillna(df['ACIDITY'])
+    df.drop(['ACIDITY'],axis=1,inplace=True)
+
+    # Body/Texture
+    df['BODY'] = df['ner_properties'].apply(lambda x: json.loads(x).get('BODY') if pd.notnull(x) else None)
+    df['body'] = df['extra_properties'].apply(lambda x: json.loads(x).get('body') if (pd.notnull(x) and json.loads(x).get('body')!='Not available') else None)
+
+    df['body'] = df['BODY'].fillna(df['body'])
+    df.drop(['BODY'],axis=1,inplace=True)
+
+    # Other properties, aftertaste
+
+    df['aftertaste'] = df['extra_properties'].apply(lambda x: json.loads(x).get('aftertaste') if (pd.notnull(x) and json.loads(x).get('aftertaste')!='Not available') else None)
+    df['AFTERTASTE'] = df['ner_properties'].apply(lambda x: json.loads(x).get('AFTERTASTE') if pd.notnull(x) else None)
+
+    df['aftertaste'] = df['aftertaste'].fillna(df['AFTERTASTE'])
+    df['aftertaste'] = df['aftertaste'].apply(lambda x: f"{x} aftertaste" if pd.notnull(x) else x)
+    df['other_properties'] = df['ner_properties'].apply(lambda x: json.loads(x).get('COFFEE_PROPERTIES') if pd.notnull(x) else None)
+    df['other_properties'] = df['other_properties'].fillna('') + ' ' + df['aftertaste'].fillna('')
+    df.drop(['AFTERTASTE','aftertaste'],axis=1,inplace=True)
+
+
+    addition_cols = ['location','producers','coffee_type','aroma','acidity','body','other_properties']
     standard_cols.extend(addition_cols)
 
     print(standard_cols)
 
     df = df[standard_cols]
 
+    df.drop(['ner_properties','extra_properties'],axis=1,inplace=True)
 
-    col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','variety']
+
+    col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','variety','location','producers',
+    'coffee_type','aroma','other_properties'
+    ]
     for text_col in col_text_cleaner:
         try:
             df[text_col] = df[text_col].apply(text_cleaner)

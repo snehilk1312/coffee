@@ -4,10 +4,13 @@ import os,re,json,sys
 from tqdm import tqdm
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+
 from attribute_cleaner.price_cleaner import price_cleaner
 from attribute_cleaner.general_string_cleaner import text_cleaner
 from attribute_cleaner.altitude_cleaner import extract_altitude
 from attribute_cleaner.roast_level import get_roast_level
+from attribute_cleaner.extract_varietal import extract_varietal
+
 from datetime import datetime
 import sqlalchemy
 import spacy
@@ -85,6 +88,8 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
 
     columns_missing_from_standard_table = [i for i in standard_cols if i not in df.columns.tolist()]
     df[columns_missing_from_standard_table] = None
+
+    df['description'] = df['description'].fillna('') + ' ' + df['name'].fillna('')
 
     col_text_cleaner = ['description']
     for text_col in col_text_cleaner:
@@ -242,12 +247,11 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     addition_cols = ['location','producers','coffee_type','aroma','acidity','body','other_properties']
     standard_cols.extend(addition_cols)
 
-    print(standard_cols)
+    # print(standard_cols)
 
     df = df[standard_cols]
 
     df.drop(['ner_properties','extra_properties'],axis=1,inplace=True)
-
 
     col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','variety','location','producers',
     'coffee_type','aroma','other_properties'
@@ -257,6 +261,9 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
             df[text_col] = df[text_col].apply(text_cleaner)
         except KeyError:
             pass
+
+    # standard cols
+    df.varietal = df.varietal.apply(extract_varietal)
 
     # putting it into db
     conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')

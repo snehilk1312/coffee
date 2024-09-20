@@ -34,4 +34,6 @@
     - In the first attempt I rode the `LLM` hype and created a recommendation sysyem based on `RAG` which although not completely awful, was of little use.
     - In the current Iteration , the `LLMised` pipeline will be used to assist main recommender which will be classical Recommendation system - a combination of content+collaborative methods.
 
+3. **`llama-index-notebooks`**
+   - This is also a part of `LLM` based attempt to make recommender based on RAG, not awful and gives good enough recommendation(if you are just starting), but won't work with unseen beans and is not based on coffee properties. It has some learning material which needs to be cleaned.
 ---

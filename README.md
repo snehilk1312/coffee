@@ -64,6 +64,6 @@ This project consists of the following steps:
     Progress: [░░░░░░░░░░] 0%
     Leveraging community feedback and ratings to improve recommendations based on user similarity.
 
-    Retrieval-Augmented Generation (RAG) - Not Started
-    Progress: [░░░░░░░░░░] 0%
-    Enhancing the recommendation system with retrieval-based techniques and generative models for better accuracy.
+    Retrieval-Augmented Generation (RAG) - In Progress
+    Progress: [███░░░░░░░] 30%
+    Enhancing the recommendation system with retrieval-based techniques and generative models for better accuracy.Poc with r/indiacoffee data done, more reddit and some discord data will be used.

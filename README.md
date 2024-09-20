@@ -41,3 +41,29 @@ This version highlights both the beginner-friendly aspect and the ability to mak
   
 3. **`llama-index-notebooks`**
     - Contains notebooks exploring `LLM`-based recommendations (RAG). While functional for beginners, it's not ideal for unseen beans and lacks focus on specific coffee properties.
+  
+This project consists of the following steps:
+
+    Data Collection - In Progress
+    Progress: [████░░░░░░] 40%
+    Collecting data on user preferences, coffee bean varieties, roast levels, brewing methods, and sensory notes.
+
+    Named Entity Recognition (NER) - In Progress
+    Progress: [██████░░░░] 60%
+    Identifying key entities like coffee bean characteristics, flavor notes, and roast profiles from user feedback using custom NER models.
+
+    Data Transformation - In Progress
+    Progress: [█████░░░░░] 50%
+    Processing and structuring the data for use in the recommendation algorithms.
+
+    Content-Based Recommendation - Not Started
+    Progress: [░░░░░░░░░░] 0%
+    Using user preferences and coffee characteristics to suggest similar beans they might enjoy.
+
+    Collaborative Recommendation - Not Started
+    Progress: [░░░░░░░░░░] 0%
+    Leveraging community feedback and ratings to improve recommendations based on user similarity.
+
+    Retrieval-Augmented Generation (RAG) - Not Started
+    Progress: [░░░░░░░░░░] 0%
+    Enhancing the recommendation system with retrieval-based techniques and generative models for better accuracy.

@@ -4,6 +4,16 @@
 
 ---
 
+### Why This Project?
+
+For specialty coffee lovers, the search for the perfect cup is never-ending. Whether you're new to the world of specialty coffee or already know what you like but want to explore something similar — be it roast level or sensory nuances — the options can often feel overwhelming. After navigating this journey myself, filled with both disappointments and delightful surprises, I decided to create this coffee recommender to make the process easier for everyone.
+
+By combining your brewing preferences with data, this tool suggests — with 95% confidence — the next beans you’ll love. It doesn’t just recommend, though. It learns from the experience of others, cross-verifying and fine-tuning its suggestions based on feedback from a community of coffee enthusiasts. Whether you’re looking to try something new or refine your favorites, this recommender ensures that every cup is one to savor.
+
+This version highlights both the beginner-friendly aspect and the ability to make fine-tuned recommendations(be it roast level, estates, processing, etc) for experienced coffee drinkers. It also emphasizes the crowdsourced data angle to show how the system continually improves its recommendations based on community input. Let me know what you think!
+
+---
+
 ### Major Components:
 
 1. **`coffee_database`**
@@ -27,7 +37,7 @@
     - **`sql`**: Currently part of the transformer, but will be relocated soon.
 
 2. **`pushshift_dumps`**
-    - Focuses on utilizing Reddit data for improving recommendations. Although initial work involved a `RAG` (LLM-based) approach, future iterations will use a classical recommendation system, combining content based and collaborative recommender.
+    - Focuses on utilizing Reddit data for improving recommendations. Although initial work involved a `RAG` (LLM-based) approach, future iterations will use a classical recommendation system, combining content and collaborative methods.
   
 3. **`llama-index-notebooks`**
     - Contains notebooks exploring `LLM`-based recommendations (RAG). While functional for beginners, it's not ideal for unseen beans and lacks focus on specific coffee properties.

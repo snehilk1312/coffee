@@ -10,6 +10,10 @@ from attribute_cleaner.general_string_cleaner import text_cleaner
 from attribute_cleaner.altitude_cleaner import extract_altitude
 from attribute_cleaner.roast_level import get_roast_level
 from attribute_cleaner.extract_varietal import extract_varietal
+from attribute_cleaner.extract_estate import get_estate
+from attribute_cleaner.tasting_notes_cleaner import clean_notes
+from attribute_cleaner.aroma_cleaner import clean_aroma
+
 
 from datetime import datetime
 import sqlalchemy
@@ -265,6 +269,50 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     # standard cols
     df.varietal = df.varietal.apply(extract_varietal)
 
+    df["filler_dict"] = df['estate'].apply(get_estate)
+    
+    df['estate_placeholder'] = df['filler_dict'].apply(lambda x: x.get('estate') if pd.notnull(x) else None)
+    df['producers_placeholder'] = df['filler_dict'].apply(lambda x: x.get('producers') if pd.notnull(x) else None)
+    df['location_placeholder'] = df['filler_dict'].apply(lambda x: x.get('location') if pd.notnull(x) else None)
+    df['altitude_placeholder'] = df['filler_dict'].apply(lambda x: x.get('altitude') if pd.notnull(x) else None)
+    df['country_placeholder'] = df['filler_dict'].apply(lambda x: x.get('country') if pd.notnull(x) else None)
+
+    df['estate'] = df['estate_placeholder'].fillna(df['estate'])
+    df['producers'] = df['producers_placeholder'].fillna(df['producers'])
+    df['location'] = df['location_placeholder'].fillna(df['location'])
+    df['altitude'] = df['altitude'].fillna(df['altitude_placeholder'])
+    df['country'] = df['country_placeholder'].fillna(df['country'])
+
+    df.reset_index(inplace=True,drop=True)
+
+    for idx,row in df.iterrows():
+        if row['estate'] and 'sakleshpur' in row['estate'] and row['producers'] and 'purnesh' in row['producers']:
+            df.loc[idx,'estate'] = 'harley'
+            df.loc[idx,'producers'] = 'dm purnesh, dm shankar'
+            df.loc[idx,'location'] = 'sakleshpur, karnataka'
+            if row['altitude']==None or row['altitude']!=row['altitude']:
+                df.loc[idx,'altitude'] = 1000
+            df.loc[idx,'country'] = 'india'
+
+    df.drop(['estate_placeholder'],axis=1,inplace=True) 
+    df.drop(['producers_placeholder'],axis=1,inplace=True) 
+    df.drop(['location_placeholder'],axis=1,inplace=True) 
+    df.drop(['altitude_placeholder'],axis=1,inplace=True) 
+    df.drop(['country_placeholder'],axis=1,inplace=True) 
+
+    df.drop(['filler_dict'],axis=1,inplace=True) 
+    df.drop(['coffee_type'],axis=1,inplace=True) 
+
+
+    df['tasting_notes'] = df['tasting_notes'].apply(clean_notes)
+    df['tasting_notes'] = df['tasting_notes'].apply(text_cleaner)
+
+    df['aroma'] = df['aroma'].apply(clean_aroma)
+    df['aroma'] = df['aroma'].apply(text_cleaner)
+
+
+
+
     # putting it into db
     conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
     # df.to_sql(name = 'transformed_stg' , con=conn, index=False, if_exists='append',dtype=type_col,schema='public')
@@ -275,3 +323,9 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
 
 
 
+# problems:
+
+# Issue 1
+# bad estate NER
+# Kudiraipanjan Estate Lactic Fermentation Natural (110 Hrs)
+# balanoor vontekad 2024 (india)

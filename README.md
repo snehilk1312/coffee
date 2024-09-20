@@ -29,4 +29,9 @@
     5. **`sql`**  
        Currently part of the transformer module but will be relocated.
 
+2. **`pushshift_dumps`**
+    - Reddit have always been a great place for discussions and learning (inspite of it's decreasing standard nowadays) . There is too much valuable data thats have been there that can make any recommendation system shine if used correctly. The current content of this folder has some outdated data and scripts but I will be updating it once the part `coffee_database` will have considerable closure.
+    - In the first attempt I rode the `LLM` hype and created a recommendation sysyem based on `RAG` which although not completely awful, was of little use.
+    - In the current Iteration , the `LLMised` pipeline will be used to assist main recommender which will be classical Recommendation system - a combination of content+collaborative methods.
+
 ---

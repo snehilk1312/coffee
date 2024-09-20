@@ -13,6 +13,9 @@ from attribute_cleaner.extract_varietal import extract_varietal
 from attribute_cleaner.extract_estate import get_estate
 from attribute_cleaner.tasting_notes_cleaner import clean_notes
 from attribute_cleaner.aroma_cleaner import clean_aroma
+from attribute_cleaner.acidity_cleaner import clean_acidity
+from attribute_cleaner.body_cleaner import clean_body
+from attribute_cleaner.processing_cleaner import clean_processing
 
 
 from datetime import datetime
@@ -310,6 +313,14 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     df['aroma'] = df['aroma'].apply(clean_aroma)
     df['aroma'] = df['aroma'].apply(text_cleaner)
 
+    df['body'] = df['body'].apply(clean_body)
+    df['body'] = df['body'].apply(text_cleaner)
+
+    df['acidity'] = df['acidity'].apply(clean_acidity)
+    df['acidity'] = df['acidity'].apply(text_cleaner)
+
+    df['processing'] = df['processing'].apply(clean_processing)
+    df['processing'] = df['processing'].apply(text_cleaner)
 
 
 

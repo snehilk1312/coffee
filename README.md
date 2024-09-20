@@ -67,3 +67,9 @@ This project consists of the following steps:
     Retrieval-Augmented Generation (RAG) - In Progress
     Progress: [███░░░░░░░] 30%
     Enhancing the recommendation system with retrieval-based techniques and generative models for better accuracy.Poc with r/indiacoffee data done, more reddit and some discord data will be used.
+
+
+## References
+* [r/indiacoffee](https://www.reddit.com/r/IndiaCoffee)
+* [Karnataka Planters’ Association](https://kpa.org.in)
+* Pushshift Reddit Dump

@@ -11,26 +11,31 @@ load_dotenv()
 
 roaster = 'kapi_kottai'
 
-# Fetch webpage content
-url = "https://kapikottai.coffee/collections/all"
-response = requests.get(url)
-html_content = response.content
-
-# Parse the webpage content
-soup = BeautifulSoup(html_content, 'html.parser')
-
 # Base URL for links
 base_url = "https://kapikottai.coffee"
 
 # Extract product information
 products = []
-for product in soup.find_all('li', class_='grid__item'):
-    name = product.find('h3', class_='card__heading').get_text(separator=" ", strip=True)
-    availability = product.find('div', class_='card__badge').get_text(separator=" ", strip=True)
-    price = product.find('span', class_='price-item--regular').get_text(separator=" ", strip=True)
-    link = base_url + product.find('a', class_='full-unstyled-link')['href']
+
+# Fetch webpage content
+url = "https://kapikottai.coffee/collections/all?page="
+num_pages = 3
+
+
+for np in range(1,num_pages):
+    url_scrape = url + str(np)
+    response = requests.get(url_scrape)
+    html_content = response.content
+    # Parse the webpage content
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    for product in soup.find_all('li', class_='grid__item'):
+        name = product.find('h3', class_='card__heading').get_text(separator=" ", strip=True)
+        availability = product.find('div', class_='card__badge').get_text(separator=" ", strip=True)
+        price = product.find('span', class_='price-item--regular').get_text(separator=" ", strip=True)
+        link = base_url + product.find('a', class_='full-unstyled-link')['href']
     
-    products.append([name, availability, price, link])
+        products.append([name, availability, price, link])
 
 # Define a function to scrape properties from individual product pages
 def scrape_properties(url):

@@ -13,3 +13,4 @@ train_file_try*.txt
 models/
 raw_data/
 final.ipynb
+test.ipynb

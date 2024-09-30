@@ -142,6 +142,19 @@ where roaster = 'greysoul'
                and scraped_at >=  current_date-20
                )
 ),
+coffee_first_scraped_at_12 as (select *, row_number() over (partition by "name" order by scraped_at) as rn
+                                 from raw_scraped.rossette
+                                 ),
+roaster12 as (
+select roaster,name,description
+from public.transformed_stg
+where roaster = 'rossette'
+  and name in (select "name"
+               from coffee_first_scraped_at_12
+               where rn = 1
+               and scraped_at >=  current_date-20
+               )
+),
 final as (
 select * from roaster1
 union all
@@ -163,5 +176,8 @@ select * from roaster9
 union all
 select * from roaster10
 union all
-select * from roaster11)
-select * from final
+select * from roaster11
+union all
+select * from roaster12
+)
+select description from final

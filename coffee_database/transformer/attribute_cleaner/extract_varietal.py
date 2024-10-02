@@ -5,6 +5,7 @@ def extract_varietal(text):
         return None
     if text != text:
         return None
+    text = text.lower()
 
     coffee_varieties_dict = {
         'baitan': 'batian',
@@ -20,6 +21,7 @@ def extract_varietal(text):
         'caturra': 'caturra',
         'cautai': 'catuai',
         'cauvery': 'cauvery',
+        'cavery': 'cauvery',
         'chandragiri': 'chandragiri',
         'cxr': 'cxr',
         'geisha': 'geisha',
@@ -96,3 +98,4 @@ def extract_varietal(text):
 
 if __name__=="__main__":
     print(extract_varietal('sln - 9 & sln - 795'))
+    print(extract_varietal('HDT X CATAUI'))

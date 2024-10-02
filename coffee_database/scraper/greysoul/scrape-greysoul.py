@@ -45,7 +45,7 @@ with open(csv_file, 'w', newline='') as file:
         
         def extract_property(label):
             row = table.find('td', string=label)
-            return row.find_next('td').get_text(separator=" ", strip=True) if row else 'N/A'
+            return row.find_next('td').get_text(separator=" ", strip=True) if row else None
 
         origin = extract_property('Origin')
         process = extract_property('Process')
@@ -58,7 +58,34 @@ with open(csv_file, 'w', newline='') as file:
         min_resting_period = extract_property('Minimum resting period')
         tasting_notes = extract_property('Based on Sensory Evaluation')
 
+        if varietal:
+            varietal = varietal.split(' at ')[0].strip()
 
+        if not varietal:
+            varietal = extract_property('Varietal & Altitude')
+            if not altitude and varietal:
+                altitude = varietal.split(' at ')[-1].strip()
+                varietal = varietal.split(' at ')[0].strip()
+            elif altitude and varietal:
+                varietal = varietal.split(' at ')[0].strip()
+                
+        if not varietal:
+            varietal = extract_property('VARIETAL & ALTITUDE')
+            if not altitude and varietal:
+                altitude = varietal.split(' at ')[-1].strip()
+                varietal = varietal.split(' at ')[0].strip()
+            elif altitude and varietal:
+                varietal = varietal.split(' at ')[0].strip()
+
+        if not varietal:
+            varietal = extract_property('Varietal & BRIX')
+            if varietal:
+                varietal = varietal.split('|')[0].lower().strip()
+
+        if name=='Fermented Graded Washed (Med-Dark Profile)' and not varietal:
+            varietal = 'catuai'
+            if not altitude:
+                altitude = '4300 feet'
 
         # Extract additional properties from the table
         description = product_soup.find('div', class_='product__description').get_text(separator=" ", strip=True)

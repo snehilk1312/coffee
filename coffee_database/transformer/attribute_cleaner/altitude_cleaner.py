@@ -40,9 +40,5 @@ def extract_altitude(text):
     return int(sum(altitudes[0])/2)
 
 if __name__=="__main__":
-    altitude = '1320 – 1870 masl'
-    print(extract_altitude(altitude))
-    altitude = '4000+ Feet'
-    print(extract_altitude(altitude))
-    altitude = '4400 feet , 1350 meters'
+    altitude = 'Catuai grown at 4300 feet'
     print(extract_altitude(altitude))

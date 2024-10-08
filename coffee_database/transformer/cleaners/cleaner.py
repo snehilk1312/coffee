@@ -31,7 +31,7 @@ warnings.filterwarnings("ignore")
 load_dotenv()
 
 roaster_list = ['rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven','curious_life','greysoul',
-                'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox'
+                'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
                 ]
 
 # Create an SQLAlchemy engine (replace with your actual database URL)

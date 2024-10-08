@@ -8,74 +8,9 @@ import os
 from dotenv import load_dotenv
 import re
 
-def extract_properties(text):
-    # Convert text to lowercase
-    text = text.lower()
-
-    properties = {
-        'estate': None,
-        'location': None,
-        'brix': None,
-        'block': None,
-        'varietal': None,
-        'processing': None,
-        'tasting_notes': None,
-        'elevation': None,
-        'roast_level': None,
-    }
-    
-    # Estate
-    estate_match = re.search(r'estate\s*name\s*=\s*(.+?)\. location:', text)
-    if not estate_match:
-        estate_match = re.search(r'from our farm (.+?) estate', text)
-    if estate_match:
-        properties['estate'] = estate_match.group(1).strip()
-
-    # Location
-    location_match = re.search(r'location\s*:\s*(.+)', text)
-    if location_match:
-        properties['location'] = location_match.group(1).strip()
-
-    # BRIX
-    brix_match = re.search(r'brix\s*:\s*([\d\.]+)', text)
-    if brix_match:
-        properties['brix'] = brix_match.group(1).strip()
-
-    # Block
-    block_match = re.search(r'block\s*:\s*(.+?)\.', text)
-    if block_match:
-        properties['block'] = block_match.group(1).strip()
-
-    # Varietal
-    varietal_match = re.search(r'varietal\s*:\s*(.+?)\.', text)
-    if varietal_match:
-        properties['varietal'] = varietal_match.group(1).strip()
-
-    # Processing
-    processing_match = re.search(r'processing\s*:\s*(.+?)\.', text)
-    if processing_match:
-        properties['processing'] = processing_match.group(1).strip()
-
-    # Tasting Notes
-    tasting_notes_match = re.search(r'tasting notes\s*:\s*(.+)', text)
-    if tasting_notes_match:
-        properties['tasting_notes'] = tasting_notes_match.group(1).strip()
-
-    # Elevation
-    elevation_match = re.search(r'elevation\s*:\s*(.+?)(?:m|meters?)', text)
-    if elevation_match:
-        properties['elevation'] = elevation_match.group(1).strip()
-
-    # Roast Level
-    roast_level_match = re.search(r'roast\s*level\s*:\s*(.+)', text)
-    if roast_level_match:
-        properties['roast_level'] = roast_level_match.group(1).strip()
-
-    return properties
-
 load_dotenv()
 
-roaster = 'rossette'
+roaster = 'fraction9'
 
 # Base URL for the coffee collection
 base_url = "https://www.fraction9coffee.com"
@@ -110,12 +45,44 @@ for product in soup.find_all('div',class_='product-card__details'):
         prop_tag = product_soup.find('div', class_='product-single__box__block--description')
         description = prop_tag.get_text(separator=" ", strip=True)
         description = description.replace('💥',' ')
+        # print(description)
 
-        coffee_properties.update(extract_properties(description))
+        # coffee_properties.update(extract_properties(description))
 
-        # coffee_properties["price"] = product_soup.find('span', class_='price-item').text.strip()
-        # coffee_properties["description"] = product_soup.find('p', {"x-ref": "para"})['data-desc']
+        try:    
+            coffee_properties["price"] = product_soup.find('span', class_='price__number').text.strip()
+        except:
+            coffee_properties["price"] = None
+
+        coffee_properties["description"] = name +' ' + description
+        coffee_properties["description"] = coffee_properties["description"].lower()
+
+        if 'kalyancool' in coffee_properties["description"]:
+            coffee_properties["description"] = coffee_properties["description"].replace('kalyancool', 'estate : kalyancool estate')
 
         # Append the coffee details to the list
-        # coffee_details.append(coffee_properties)
-        print(coffee_properties)
+        coffee_details.append(coffee_properties)
+        # print(coffee_properties)
+        # print('*'*100)
+
+
+# Define the CSV file headers
+headers = ["name", "url", "price","description"]
+
+# Write the combined data to a CSV file
+csv_filename = 'fraction9.csv'
+with open(csv_filename, mode='w', newline='', encoding='utf-8') as file:
+    writer = csv.DictWriter(file, fieldnames=headers)
+    writer.writeheader()
+    for row in coffee_details:
+        writer.writerow(row)
+
+print(f"Data saved to {csv_filename}")
+
+
+# putting it into db
+
+conn = create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
+df = pd.read_csv(csv_filename)
+df['scraped_at'] = datetime.now()
+df.to_sql(name = roaster , con=conn, index=False, if_exists='append',schema='raw_scraped')

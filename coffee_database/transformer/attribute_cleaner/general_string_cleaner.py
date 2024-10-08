@@ -12,6 +12,7 @@ def text_cleaner(input_string):
     # Step 2: Remove specific unwanted strings like 'nbsp', 'NBSP'
     cleaned = re.sub(r'(\bnbsp\b|\bNBSP\b)', '', cleaned)
     cleaned = cleaned.replace('grown at 4200 msl','')
+    cleaned = cleaned.replace('instagram','')
     cleaned = cleaned.replace('&amp','')
     cleaned = cleaned.replace('&#39;',"'")
 

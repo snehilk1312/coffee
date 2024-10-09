@@ -168,6 +168,19 @@ where roaster = 'fraction9'
                and scraped_at >=  current_date
                )
 ),
+coffee_first_scraped_at_14 as (select *, row_number() over (partition by "name" order by scraped_at) as rn
+                                 from raw_scraped.half_light
+                                 ),
+roaster14 as (
+select roaster,name,description
+from public.transformed_stg
+where roaster = 'half_light'
+  and name in (select "name"
+               from coffee_first_scraped_at_14
+               where rn = 1
+               and scraped_at >=  current_date
+               )
+),
 final as (
 select * from roaster1
 union all
@@ -194,5 +207,7 @@ union all
 select * from roaster12
 union all
 select * from roaster13
+union all
+select * from roaster14
 )
 select description from final

@@ -30,7 +30,7 @@ warnings.filterwarnings("ignore")
 
 load_dotenv()
 
-roaster_list = ['rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven','curious_life','greysoul',
+roaster_list = ['half_light','rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven','curious_life','greysoul',
                 'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
                 ]
 
@@ -82,7 +82,9 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
                     'roast': 'roast_level',
                     'flavor': 'tasting_notes',
                     'tastes_like': 'tasting_notes',
+                    'cup notes': 'tasting_notes',
                     'roasting_profile': 'roast_level',
+                    'roast profile':  'roast_level',
                     'estate_name': 'estate',
                     'roast_profile': 'roast_level',
                     'roaster_thoughts': 'description',

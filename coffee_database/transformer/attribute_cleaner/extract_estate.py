@@ -33,6 +33,9 @@ def get_estate(text):
             word = 'ratna'
         if word == 'bitcode' or word=='belur':
             word = 'biccode'
+        if word == 'merthi' or word=='subbangudigy':
+            word = 'ms estate'
+
         for p_estate in estate_list:
             if word in p_estate.lower().strip() and p_estate.lower().strip() not in stop_words:
                 is_match = df[df['Estate'] == p_estate].iloc[0]

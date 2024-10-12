@@ -38,10 +38,10 @@ for img_link in soup.find_all('a'):
         image = Image.open(image_data)  # Open the image with PIL
 
         # Save (download) the image
-        try:
-            image.save(f'{num}.jpeg')  # Saves the image locally
-        except:
-            image.save(f'{num}.png')  # Saves the image locally
+        # try:
+        #     image.save(f'{num}.jpeg')  # Saves the image locally
+        # except:
+        #     image.save(f'{num}.png')  # Saves the image locally
 
         # Convert to grayscale and sharpen
         image = image.convert('L')
@@ -51,7 +51,9 @@ for img_link in soup.find_all('a'):
         extracted_text = pytesseract.image_to_string(image)
 
         # Output the extracted text
-        print(extracted_text)
+        if extracted_text:
+            print(extracted_text)
+            print('*'*100)
     else:
         print(f"Failed to retrieve the image. Status code: {response.status_code}")
     

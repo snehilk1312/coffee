@@ -1,6 +1,6 @@
-# Speciality Coffee Recommender
+# Specialty Coffee Recommender
 
-### This repository contains resources to build a speciality coffee recommender system, with a focus on Indian beans for now.
+### This repository contains resources to build a specialty coffee recommender system, with a focus on Indian beans for now.
 
 ---
 

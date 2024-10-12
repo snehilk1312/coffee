@@ -30,21 +30,22 @@ warnings.filterwarnings("ignore")
 
 load_dotenv()
 
-roaster_list = ['half_light','rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven','curious_life','greysoul',
-                'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
+roaster_list = ['gshot','half_light','rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven',
+                'curious_life','greysoul','kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
                 ]
 
 # Create an SQLAlchemy engine (replace with your actual database URL)
 engine = sqlalchemy.create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
 
-nlp = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_3/model-best/')
+nlp1 = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_3/model-best/')
+nlp2 = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_4/model-best/')
 
-def return_each_label(text):
+def return_each_label(text,nlp_model):
     return_dict = {}
     final_dict = {}
 
     if text:
-        doc = nlp(text.lower())
+        doc = nlp_model(text.lower())
         
         for ent in doc.ents:
             # print(ent.label_)
@@ -62,7 +63,7 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     standard_cols = ["roaster","name", "link", "price", "altitude", "varietal", "processing", 
                 "estate", "roast_level", "tasting_notes", "description", 
                 "country", "scraped_at","transformed_at"
-                ,"extra_properties","ner_properties"
+                ,"extra_properties","ner_properties","ner_properties_replace1"
                 ]
 
     # Define your SQL query
@@ -118,8 +119,12 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     df["extra_properties"] = df.apply(lambda row: {col: row[col] for col in df.columns if col not in standard_cols}, axis=1)
     df['extra_properties'] = df['extra_properties'].apply(json.dumps)
 
-    df["ner_properties"] = df['description'].apply(return_each_label)
+    df["ner_properties"] = df['description'].apply(lambda x: return_each_label(x, nlp1))
     df["ner_properties"] = df["ner_properties"].apply(json.dumps)
+
+    # extra ner_properties
+    df["ner_properties_replace1"] = df['description'].apply(lambda x: return_each_label(x, nlp2))
+    df["ner_properties_replace1"] = df["ner_properties_replace1"].apply(json.dumps)
 
     # taking care of extra or less columns
     df = df[standard_cols]  
@@ -203,7 +208,7 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     # Producers 
     df['planters'] = df['extra_properties'].apply(lambda x: json.loads(x).get('planters') if pd.notnull(x) else None)
     df['producers'] = df['extra_properties'].apply(lambda x: json.loads(x).get('producers') if pd.notnull(x) else None)
-    df['FARMER'] = df['ner_properties'].apply(lambda x: json.loads(x).get('FARMER') if pd.notnull(x) else None)
+    df['FARMER'] = df['ner_properties_replace1'].apply(lambda x: json.loads(x).get('FARMER') if pd.notnull(x) else None)
 
     df['producers'] = df['planters'].fillna(df['producers'])
     df['producers'] = df['producers'].fillna(df['FARMER'])
@@ -244,11 +249,11 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
     # Other properties, aftertaste
 
     df['aftertaste'] = df['extra_properties'].apply(lambda x: json.loads(x).get('aftertaste') if (pd.notnull(x) and json.loads(x).get('aftertaste')!='Not available') else None)
-    df['AFTERTASTE'] = df['ner_properties'].apply(lambda x: json.loads(x).get('AFTERTASTE') if pd.notnull(x) else None)
+    df['AFTERTASTE'] = df['ner_properties_replace1'].apply(lambda x: json.loads(x).get('AFTERTASTE') if pd.notnull(x) else None)
 
     df['aftertaste'] = df['aftertaste'].fillna(df['AFTERTASTE'])
     df['aftertaste'] = df['aftertaste'].apply(lambda x: f"{x} aftertaste" if pd.notnull(x) else x)
-    df['other_properties'] = df['ner_properties'].apply(lambda x: json.loads(x).get('COFFEE_PROPERTIES') if pd.notnull(x) else None)
+    df['other_properties'] = df['ner_properties_replace1'].apply(lambda x: json.loads(x).get('COFFEE_PROPERTIES') if pd.notnull(x) else None)
     df['other_properties'] = df['other_properties'].fillna('') + ' ' + df['aftertaste'].fillna('')
     df.drop(['AFTERTASTE','aftertaste'],axis=1,inplace=True)
 
@@ -260,7 +265,7 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
 
     df = df[standard_cols]
 
-    df.drop(['ner_properties','extra_properties'],axis=1,inplace=True)
+    df.drop(['ner_properties','extra_properties','ner_properties_replace1'],axis=1,inplace=True)
 
     col_text_cleaner = ['estate','varietal','processing','tasting_notes','acidity','body','aftertaste','variety','location','producers',
     'coffee_type','aroma','other_properties'

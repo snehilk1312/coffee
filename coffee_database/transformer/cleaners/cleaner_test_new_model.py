@@ -30,14 +30,14 @@ warnings.filterwarnings("ignore")
 
 load_dotenv()
 
-roaster_list = ['half_light','rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven','curious_life','greysoul',
-                'kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
+roaster_list = ['gshot','half_light','rossette','savorworks','bloom_coffee_roasters','blue_tokai','corridor_seven',
+                'curious_life','greysoul','kapi_kottai','kc_roasters','koffie_genetics','naivo','quick_brown_fox','fraction9'
                 ]
 
 # Create an SQLAlchemy engine (replace with your actual database URL)
 engine = sqlalchemy.create_engine(f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}')
 
-nlp = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_4/model-best/')
+nlp = spacy.load('/Users/snehil/Work/self/coffee/coffee_database/ner/output_try_3/model-best/')
 
 def return_each_label(text):
     return_dict = {}

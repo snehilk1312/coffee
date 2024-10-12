@@ -35,6 +35,8 @@ def get_estate(text):
             word = 'biccode'
         if word == 'merthi' or word=='subbangudigy':
             word = 'ms estate'
+        if word == 'gunibylu':
+            word = 'gunibyle'
 
         for p_estate in estate_list:
             if word in p_estate.lower().strip() and p_estate.lower().strip() not in stop_words:

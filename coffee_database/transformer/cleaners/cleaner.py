@@ -303,6 +303,13 @@ for roaster in tqdm(roaster_list, desc="Processing roasters"):
             if row['altitude']==None or row['altitude']!=row['altitude']:
                 df.loc[idx,'altitude'] = 1000
             df.loc[idx,'country'] = 'india'
+        
+        if not row['estate'] and row['roaster']=='fraction9':
+            df.loc[idx,'estate'] = 'kalyancool'
+            df.loc[idx,'producers'] = 'fraction9 Coffee'
+            df.loc[idx,'location'] = 'chickmagaluru, karnataka'
+            df.loc[idx,'altitude'] = 1050
+            df.loc[idx,'country'] = 'india'
 
     df.drop(['estate_placeholder'],axis=1,inplace=True) 
     df.drop(['producers_placeholder'],axis=1,inplace=True) 
